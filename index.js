@@ -8,28 +8,34 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
   ],
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return;
+client.on('ready', () => {
+  console.log(`Bot is online as ${client.user.tag}`);
+});
 
-  const userPrompt = message.content.trim();
-  if (!userPrompt) return;
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(userPrompt);
-    const response = await result.response;
-    const text = response.text();
+  if (interaction.commandName === 'bot') {
+    const userPrompt = interaction.options.getString('prompt');
 
-    message.reply(text);
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    message.reply("Error: Gemini AI could not process your message.");
+    try {
+      await interaction.deferReply(); // to prevent 3s timeout
+
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(userPrompt);
+      const response = await result.response;
+      const text = response.text();
+
+      await interaction.editReply(text);
+    } catch (error) {
+      console.error("Gemini API Error:", error);
+      await interaction.editReply("Error: Gemini AI could not process your message.");
+    }
   }
 });
 
@@ -40,5 +46,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log(`Web server running on port ${3000}`);
+  console.log(`Web server running on port 3000`);
 });
