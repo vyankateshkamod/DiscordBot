@@ -18,41 +18,47 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === 'bot') {
-    const prompt = interaction.options.getString('prompt'); // Fixed typo
+    const prompt = interaction.options.getString('prompt');
 
     if (!prompt) {
+      // Use flags instead of deprecated `ephemeral`
       return interaction.reply({
         content: '❌ Please provide a question for AI.',
-        ephemeral: true,
+        flags: 64, // ephemeral
       });
     }
 
-    let hasReplied = false;
+    let hasDeferred = false;
 
     try {
       await interaction.deferReply();
-      hasReplied = true;
+      hasDeferred = true;
 
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent([prompt]);
       const response = await result.response;
       const text = response.text();
 
-      await interaction.editReply(text || '🤖 AI did not return any response.');
+      await interaction.editReply(text);
     } catch (error) {
       console.error('API Error:', error);
 
-      if (hasReplied) {
+      if (hasDeferred) {
         await interaction.editReply('❌ Error: AI could not process your message.');
       } else {
-        await interaction.reply({
-          content: '❌ Error occurred before I could reply.',
-          ephemeral: true,
-        });
+        try {
+          await interaction.reply({
+            content: '❌ Error occurred before I could reply.',
+            flags: 64,
+          });
+        } catch (innerErr) {
+          console.error('Secondary error while replying:', innerErr.message);
+        }
       }
     }
   }
 });
+
 
 client.login(process.env.BOT_TOKEN);
 
