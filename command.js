@@ -7,7 +7,7 @@ const commands = [
     .setDescription('Ask AI anything')
     .addStringOption(option =>
       option.setName('prompt')
-        .setDescription('Your message for Gemini')
+        .setDescription('Your message for Ai')
         .setRequired(true)
     )
     .toJSON()

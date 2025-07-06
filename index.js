@@ -23,7 +23,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!prompt) {
       // Just reply (not defer) if there's no input
       return interaction.reply({
-        content: '❌ Please provide a question for Gemini.',
+        content: '❌ Please provide a question for Ai.',
         ephemeral: true,
       });
     }
@@ -38,10 +38,10 @@ client.on('interactionCreate', async (interaction) => {
 
       await interaction.editReply(text);
     } catch (error) {
-      console.error('Gemini API Error:', error);
+      console.error('API Error:', error);
 
       // Edit reply instead of sending a new one
-      await interaction.editReply('❌ Error: Gemini could not process your message.');
+      await interaction.editReply('❌ Error: Ai could not process your message.');
     }
   }
 });
