@@ -13,7 +13,7 @@ const client = new Client({
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-client.on('ready', () => {
+client.once('ready', () => {
   console.log(`Bot is online as ${client.user.tag}`);
 });
 
@@ -23,24 +23,34 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'bot') {
     const userPrompt = interaction.options.getString('prompt');
 
+    if (!userPrompt) {
+      await interaction.reply("❌ Please provide a prompt.");
+      return;
+    }
+
     try {
       await interaction.deferReply();
 
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent(userPrompt);
+      const result = await model.generateContent([userPrompt]);
       const response = await result.response;
       const text = response.text();
 
       await interaction.editReply(text);
     } catch (error) {
       console.error("Gemini API Error:", error);
-      await interaction.editReply("Error: Gemini AI could not process your message.");
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply("❌ Error: Gemini API could not process your message.");
+      } else {
+        await interaction.reply("❌ Error occurred and could not reply in time.");
+      }
     }
   }
 });
 
 client.login(process.env.BOT_TOKEN);
 
+// Web endpoint (optional)
 app.get('/', (req, res) => {
   res.send('Bot is running!');
 });
