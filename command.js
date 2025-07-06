@@ -1,20 +1,31 @@
-import { REST, Routes } from 'discord.js';
+require('dotenv').config();
+const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 const commands = [
-  {
-    name: 'create',
-    description: 'create a short url',
-  },
+  new SlashCommandBuilder()
+    .setName('bot')
+    .setDescription('Ask AI anything')
+    .addStringOption(option =>
+      option.setName('question')
+        .setDescription('Your question for Gemini')
+        .setRequired(true)
+    )
+    .toJSON()
 ];
 
-const rest = new REST({ version: '10' }).setToken("MTA5MzU2NzEyMzkxMTA5MDIwNg.GKKEWJ.-x4DZ_xyr_PoVVwotJdH5yKryxeEtT0AYcELvU");
+const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
-try {
-  console.log('Started refreshing application (/) commands.');
+(async () => {
+  try {
+    console.log('⏳ Registering slash commands...');
 
-  await rest.put(Routes.applicationCommands("1093567123911090206"), { body: commands });
+    await rest.put(
+      Routes.applicationCommands(process.env.CLIENT_ID),
+      { body: commands }
+    );
 
-  console.log('Successfully reloaded application (/) commands.');
-} catch (error) {
-  console.error(error);
-}
+    console.log('✅ Slash command registered!');
+  } catch (err) {
+    console.error('❌ Error registering slash command:', err);
+  }
+})();
