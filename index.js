@@ -1,6 +1,8 @@
 require('dotenv').config();
+const express = require('express');
 const { Client, GatewayIntentBits } = require('discord.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const app = express();
 
 const client = new Client({
   intents: [
@@ -40,3 +42,11 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.BOT_TOKEN);
+
+app.get('/', (req, res) => {
+  res.send('Bot is running!');
+});
+
+app.listen(3000, () => {
+  console.log(`Web server running on port ${3000}`);
+});
