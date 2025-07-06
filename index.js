@@ -24,7 +24,7 @@ client.on('interactionCreate', async interaction => {
     const userPrompt = interaction.options.getString('prompt');
 
     try {
-      await interaction.deferReply(); // to prevent 3s timeout
+      await interaction.deferReply();
 
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(userPrompt);
