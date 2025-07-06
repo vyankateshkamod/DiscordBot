@@ -18,30 +18,38 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === 'bot') {
-    const prompt = interaction.options.getString('prompt');
+    const prompt = interaction.options.getString('prompt'); // Fixed typo
 
     if (!prompt) {
-      // Just reply (not defer) if there's no input
       return interaction.reply({
-        content: '❌ Please provide a question for Ai.',
+        content: '❌ Please provide a question for AI.',
         ephemeral: true,
       });
     }
 
+    let hasReplied = false;
+
     try {
-      await interaction.deferReply(); // acknowledge before processing
+      await interaction.deferReply();
+      hasReplied = true;
 
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent([prompt]);
       const response = await result.response;
       const text = response.text();
 
-      await interaction.editReply(text);
+      await interaction.editReply(text || '🤖 AI did not return any response.');
     } catch (error) {
       console.error('API Error:', error);
 
-      // Edit reply instead of sending a new one
-      await interaction.editReply('❌ Error: Ai could not process your message.');
+      if (hasReplied) {
+        await interaction.editReply('❌ Error: AI could not process your message.');
+      } else {
+        await interaction.reply({
+          content: '❌ Error occurred before I could reply.',
+          ephemeral: true,
+        });
+      }
     }
   }
 });
@@ -54,4 +62,9 @@ app.get('/', (req, res) => {
 
 app.listen(3000, () => {
   console.log(`Web server running on port 3000`);
+});
+
+// Optional: prevent crash from unhandled promise rejections
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
 });
