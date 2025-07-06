@@ -6,8 +6,8 @@ const commands = [
     .setName('bot')
     .setDescription('Ask AI anything')
     .addStringOption(option =>
-      option.setName('question')
-        .setDescription('Your question for Gemini')
+      option.setName('prompt')
+        .setDescription('Your message for Gemini')
         .setRequired(true)
     )
     .toJSON()
@@ -17,7 +17,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
 (async () => {
   try {
-    console.log('⏳ Registering slash commands...');
+    console.log('⏳ Registering slash command...');
 
     await rest.put(
       Routes.applicationCommands(process.env.CLIENT_ID),
